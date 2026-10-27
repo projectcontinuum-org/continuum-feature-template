@@ -3,9 +3,12 @@ plugins {
 }
 
 group = "org.projectcontinuum.feature.example"
-description = "Continuum Feature Example — a sample feature module with a Hello World node"
-version = "0.0.1"
+description = "Continuum Feature Hello — a sample Kotlin feature module with a Hello World node"
+version = property("featureVersion").toString()
+
+// get continuum platform version from root project properties
+val continuumPlatformVersion = property("continuumPlatformVersion").toString()
 
 continuum {
-    continuumVersion.set("0.0.6-SNAPSHOT")
+    continuumVersion.set(continuumPlatformVersion)
 }

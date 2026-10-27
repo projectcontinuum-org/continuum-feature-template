@@ -31,7 +31,10 @@ class HelloJavaNodeModelTest {
 
     @Test
     void metadataIsCorrectlyConfigured() {
+        assertEquals(HelloJavaNodeModel.class.getName(), node.getMetadata().getId());
+        assertEquals(HelloJavaNodeModel.class.getName(), node.getMetadata().getNodeModel());
         assertEquals("Hello Java", node.getMetadata().getTitle());
+        assertFalse(node.getMetadata().getPropertiesUISchema().isEmpty());
         assertNotNull(node.getMetadata().getIcon());
         assertEquals(1, node.getInputPorts().size());
         assertEquals(1, node.getOutputPorts().size());
@@ -59,8 +62,11 @@ class HelloJavaNodeModelTest {
 
         node.execute(properties, Map.of("input", mockReader), mockOutputWriter, mockProgressCallback);
 
-        verify(mockPortWriter, times(2)).write(anyLong(), argThat(row ->
-                row.containsKey("greeting") && row.get("greeting").toString().startsWith("Hello,")
+        verify(mockPortWriter).write(eq(0L), argThat(row ->
+                "Hello, Alice!".equals(row.get("greeting"))
+        ));
+        verify(mockPortWriter).write(eq(1L), argThat(row ->
+                "Hello, Bob!".equals(row.get("greeting"))
         ));
     }
 
@@ -78,7 +84,7 @@ class HelloJavaNodeModelTest {
 
         node.execute(properties, Map.of("input", mockReader), mockOutputWriter, mockProgressCallback);
 
-        verify(mockPortWriter).write(eq(1L), argThat(row ->
+        verify(mockPortWriter).write(eq(0L), argThat(row ->
                 "Hello, World!".equals(row.get("greeting"))
         ));
     }
@@ -97,7 +103,7 @@ class HelloJavaNodeModelTest {
 
         node.execute(properties, Map.of("input", mockReader), mockOutputWriter, mockProgressCallback);
 
-        verify(mockPortWriter).write(eq(1L), argThat(row ->
+        verify(mockPortWriter).write(eq(0L), argThat(row ->
                 "Welcome, Alice!".equals(row.get("message"))
         ));
     }
@@ -110,7 +116,7 @@ class HelloJavaNodeModelTest {
 
         node.execute(null, Map.of("input", mockReader), mockOutputWriter, mockProgressCallback);
 
-        verify(mockPortWriter).write(eq(1L), argThat(row ->
+        verify(mockPortWriter).write(eq(0L), argThat(row ->
                 "Hello, Alice!".equals(row.get("greeting"))
         ));
     }

@@ -13,6 +13,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class HelloWorldNodeModelTest {
 
@@ -23,7 +24,7 @@ class HelloWorldNodeModelTest {
 
     @BeforeEach
     fun setup() {
-        node = HelloWorldNodeModel()
+        node = HelloWorldNodeModel(jacksonObjectMapper())
         mockOutputWriter = mock()
         mockPortWriter = mock()
         mockProgressCallback = mock()
@@ -33,7 +34,10 @@ class HelloWorldNodeModelTest {
 
     @Test
     fun `metadata is correctly configured`() {
+        assertEquals(HelloWorldNodeModel::class.java.name, node.metadata.id)
+        assertEquals(HelloWorldNodeModel::class.java.name, node.metadata.nodeModel)
         assertEquals("Hello World", node.metadata.title)
+        assertTrue(node.metadata.propertiesUISchema.isNotEmpty())
         assertNotNull(node.metadata.icon)
         assertEquals(1, node.inputPorts.size)
         assertEquals(1, node.outputPorts.size)
@@ -66,6 +70,7 @@ class HelloWorldNodeModelTest {
         val numCaptor = argumentCaptor<Long>()
         verify(mockPortWriter, times(2)).write(numCaptor.capture(), rowCaptor.capture())
 
+        assertEquals(listOf(0L, 1L), numCaptor.allValues)
         assertEquals("Hello, Alice!", rowCaptor.allValues[0]["greeting"])
         assertEquals("Hello, Bob!", rowCaptor.allValues[1]["greeting"])
         // Original columns preserved

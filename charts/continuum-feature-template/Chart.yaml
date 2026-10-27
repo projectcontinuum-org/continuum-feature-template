@@ -1,0 +1,15 @@
+apiVersion: v2
+name: continuum-feature-template
+description: Project Continuum feature worker — Temporal worker for the template example nodes
+type: application
+version: 0.1.0
+appVersion: "0.0.1"
+keywords:
+  - continuum
+  - workflow
+  - feature-worker
+maintainers:
+  - name: Project Continuum
+home: https://github.com/projectcontinuum-org/continuum-feature-template
+annotations:
+  continuum.io/requires: "continuum-infra >= 0.1.0, continuum-platform >= 0.1.0"
