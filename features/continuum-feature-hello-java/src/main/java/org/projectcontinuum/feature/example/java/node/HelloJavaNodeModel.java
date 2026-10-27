@@ -1,7 +1,5 @@
 package org.projectcontinuum.feature.example.java.node;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.projectcontinuum.core.commons.annotation.ContinuumNode;
@@ -13,6 +11,8 @@ import org.projectcontinuum.core.commons.utils.NodeOutputWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.*;
 
@@ -29,6 +29,10 @@ public class HelloJavaNodeModel extends ProcessNodeModel {
 
     private static final Logger logger = LoggerFactory.getLogger(HelloJavaNodeModel.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    /** Instantiated by Spring as a prototype-scoped bean (see {@link ContinuumNode}). */
+    public HelloJavaNodeModel() {
+    }
 
     // ── Ports ────────────────────────────────────────────────
 
@@ -70,41 +74,49 @@ public class HelloJavaNodeModel extends ProcessNodeModel {
 
     // ── Properties JSON Schema ───────────────────────────────
 
-    private static final Map<String, Object> propertiesSchema;
+    private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {
+    };
 
-    static {
-        try {
-            propertiesSchema = objectMapper.readValue("""
-                    {
-                      "type": "object",
-                      "properties": {
-                        "nameColumn": {
-                          "type": "string",
-                          "title": "Name Column",
-                          "description": "Column to read the name from.",
-                          "default": "name"
-                        },
-                        "greeting": {
-                          "type": "string",
-                          "title": "Greeting Prefix",
-                          "description": "The greeting word to use before the name.",
-                          "default": "Hello"
-                        },
-                        "outputColumn": {
-                          "type": "string",
-                          "title": "Output Column Name",
-                          "description": "Name of the new column that will contain the greeting.",
-                          "default": "greeting"
-                        }
-                      },
-                      "required": []
-                    }
-                    """, new TypeReference<Map<String, Object>>() {
-            });
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse properties schema", e);
-        }
-    }
+    // Jackson 3 throws the unchecked JacksonException, so no try/catch is needed
+    private static final Map<String, Object> propertiesSchema = objectMapper.readValue("""
+            {
+              "type": "object",
+              "properties": {
+                "nameColumn": {
+                  "type": "string",
+                  "title": "Name Column",
+                  "description": "Column to read the name from.",
+                  "default": "name"
+                },
+                "greeting": {
+                  "type": "string",
+                  "title": "Greeting Prefix",
+                  "description": "The greeting word to use before the name.",
+                  "default": "Hello"
+                },
+                "outputColumn": {
+                  "type": "string",
+                  "title": "Output Column Name",
+                  "description": "Name of the new column that will contain the greeting.",
+                  "default": "greeting"
+                }
+              },
+              "required": []
+            }
+            """, MAP_TYPE);
+
+    // ── Properties UI Schema (JSON Forms) ────────────────────
+
+    private static final Map<String, Object> propertiesUiSchema = objectMapper.readValue("""
+            {
+              "type": "VerticalLayout",
+              "elements": [
+                { "type": "Control", "scope": "#/properties/nameColumn" },
+                { "type": "Control", "scope": "#/properties/greeting" },
+                { "type": "Control", "scope": "#/properties/outputColumn" }
+              ]
+            }
+            """, MAP_TYPE);
 
     // ── Node Icon (SVG) ──────────────────────────────────────
 
@@ -119,26 +131,28 @@ public class HelloJavaNodeModel extends ProcessNodeModel {
 
     // ── Metadata ─────────────────────────────────────────────
 
+    // Java has no named/default arguments, so every NodeData constructor parameter is passed in order
     @NotNull
     private final ContinuumWorkflowModel.NodeData metadata = new ContinuumWorkflowModel.NodeData(
-            null,
-            "Appends a greeting column. A Java example node.",
-            "Hello Java",
-            null,
-            ICON,
-            this.getClass().getName(),
-            null,
-            inputPorts,
-            outputPorts,
-            Map.of(
+            getClass().getName(),                // id
+            "Appends a greeting column. A Java example node.", // description
+            "Hello Java",                        // title
+            "Append a greeting column",          // subTitle
+            ICON,                                // icon
+            getClass().getName(),                // nodeModel
+            null,                                // busy
+            inputPorts,                          // inputs
+            outputPorts,                         // outputs
+            Map.of(                              // properties (defaults)
                     "nameColumn", "name",
                     "greeting", "Hello",
                     "outputColumn", "greeting"
             ),
-            propertiesSchema,
-            Map.of(),
-            null,
-            null
+            propertiesSchema,                    // propertiesSchema
+            propertiesUiSchema,                  // propertiesUISchema
+            null,                                // status
+            null,                                // nodeProgress
+            null                                 // retryOptions (null = workflow default)
     );
 
     @NotNull
@@ -176,15 +190,15 @@ public class HelloJavaNodeModel extends ProcessNodeModel {
         try {
             Map<String, Object> row;
             while ((row = inputReader.read()) != null) {
-                rowNumber++;
-
                 Object nameValue = row.get(nameColumn);
                 String name = (nameValue != null) ? nameValue.toString() : "World";
                 String greetingValue = greetingPrefix + ", " + name + "!";
 
+                // Original columns plus the new greeting column (row numbers start at 0)
                 Map<String, Object> outputRow = new HashMap<>(row);
                 outputRow.put(outputColumn, greetingValue);
                 writer.write(rowNumber, outputRow);
+                rowNumber++;
 
                 if (totalRows > 0) {
                     nodeProgressCallback.report((int) (rowNumber * 100 / totalRows));

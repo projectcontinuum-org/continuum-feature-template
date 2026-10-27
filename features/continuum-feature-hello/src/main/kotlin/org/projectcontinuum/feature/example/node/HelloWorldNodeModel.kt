@@ -1,16 +1,15 @@
 package org.projectcontinuum.feature.example.node
 
+import org.projectcontinuum.core.commons.annotation.ContinuumNode
 import org.projectcontinuum.core.commons.model.ContinuumWorkflowModel
 import org.projectcontinuum.core.commons.node.ProcessNodeModel
 import org.projectcontinuum.core.commons.protocol.progress.NodeProgressCallback
 import org.projectcontinuum.core.commons.utils.NodeInputReader
 import org.projectcontinuum.core.commons.utils.NodeOutputWriter
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE
-import org.springframework.stereotype.Component
-import org.projectcontinuum.core.commons.annotation.ContinuumNode
+import tools.jackson.core.type.TypeReference
+import tools.jackson.databind.ObjectMapper
 
 /**
  * Hello World Node — a minimal example Continuum node.
@@ -19,12 +18,16 @@ import org.projectcontinuum.core.commons.annotation.ContinuumNode
  * whose value is "Hello, {name}!" where {name} comes from a configurable
  * source column (default: "name"). If the source column is missing the
  * greeting falls back to "Hello, World!".
+ *
+ * The Jackson 3 [ObjectMapper] is constructor-injected from the Spring context;
+ * in unit tests pass `jacksonObjectMapper()` instead.
  */
 @ContinuumNode
-class HelloWorldNodeModel : ProcessNodeModel() {
+class HelloWorldNodeModel(
+    private val objectMapper: ObjectMapper
+) : ProcessNodeModel() {
 
     private val logger = LoggerFactory.getLogger(HelloWorldNodeModel::class.java)
-    private val objectMapper = ObjectMapper()
 
     // ── Ports ────────────────────────────────────────────────
 
@@ -78,6 +81,22 @@ class HelloWorldNodeModel : ProcessNodeModel() {
         object : TypeReference<Map<String, Any>>() {}
     )
 
+    // ── Properties UI Schema (JSON Forms) ────────────────────
+
+    private val propertiesUiSchema: Map<String, Any> = objectMapper.readValue(
+        """
+        {
+          "type": "VerticalLayout",
+          "elements": [
+            { "type": "Control", "scope": "#/properties/nameColumn" },
+            { "type": "Control", "scope": "#/properties/greeting" },
+            { "type": "Control", "scope": "#/properties/outputColumn" }
+          ]
+        }
+        """.trimIndent(),
+        object : TypeReference<Map<String, Any>>() {}
+    )
+
     // ── Node Icon (SVG) ──────────────────────────────────────
 
     private val icon = """
@@ -93,18 +112,21 @@ class HelloWorldNodeModel : ProcessNodeModel() {
     // ── Metadata ─────────────────────────────────────────────
 
     override val metadata = ContinuumWorkflowModel.NodeData(
+        id = this.javaClass.name,
         title = "Hello World",
+        subTitle = "Append a greeting column",
         description = "Appends a greeting column to each row. A minimal example node.",
         icon = icon,
-        nodeModel = this::class.java.name,
+        nodeModel = this.javaClass.name,
         inputs = inputPorts,
         outputs = outputPorts,
-        propertiesSchema = propertiesSchema,
         properties = mapOf(
             "nameColumn" to "name",
             "greeting" to "Hello",
             "outputColumn" to "greeting"
-        )
+        ),
+        propertiesSchema = propertiesSchema,
+        propertiesUISchema = propertiesUiSchema
     )
 
     // ── Execution ────────────────────────────────────────────
@@ -133,16 +155,16 @@ class HelloWorldNodeModel : ProcessNodeModel() {
             outputPortWriter.use { writer ->
                 while (true) {
                     val row = reader.read() ?: break
-                    rowNumber++
 
                     // Read the name value from the configured column, fall back to "World"
                     val nameValue = row[nameColumn]?.toString() ?: "World"
                     val greetingValue = "$greetingPrefix, $nameValue!"
 
-                    // Write original columns plus the new greeting column
+                    // Write original columns plus the new greeting column (row numbers start at 0)
                     val outputRow = row.toMutableMap()
                     outputRow[outputColumn] = greetingValue
                     writer.write(rowNumber, outputRow)
+                    rowNumber++
 
                     // Report progress
                     if (totalRows > 0) {
