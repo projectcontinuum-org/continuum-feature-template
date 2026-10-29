@@ -312,3 +312,7 @@ See [Deployment](https://docs.projectcontinuum.org/docs/deployment/helm-charts) 
 <div align="center">
   <sub>Built for <a href="https://projectcontinuum.org">Project Continuum</a> · Questions and bugs → <a href="https://github.com/projectcontinuum-org/continuum-platform-core/issues">issue tracker</a></sub>
 </div>
+
+## 📄 License
+
+[Apache 2.0](LICENSE)
