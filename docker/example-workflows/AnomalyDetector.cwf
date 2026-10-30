@@ -1,6 +1,6 @@
 {
-    "id": "995c1a202433ea5b314f0d73569dafe9ed64bfac8a1c6320206b97b2167b374c",
-    "name": "/Users/L001418/Projects/ContinuumWorkflow/example-workflows/AnomalyDetector.cwf",
+    "id": "90dda1cf474d2a17c80eaa9d7a1f44562aae59e282a2cb15810229096c14f576",
+    "name": "/home/node/example-workflows/AnomalyDetector.cwf",
     "active": false,
     "nodes": [
         {
@@ -75,7 +75,7 @@
             },
             "width": 255,
             "height": 123,
-            "selected": true,
+            "selected": false,
             "positionAbsolute": {
                 "x": 426.43583721614345,
                 "y": 433.82473140643623
@@ -227,7 +227,7 @@
             },
             "width": 255,
             "height": 100,
-            "selected": false,
+            "selected": true,
             "positionAbsolute": {
                 "x": -458.1740457386088,
                 "y": 451.9600324823517

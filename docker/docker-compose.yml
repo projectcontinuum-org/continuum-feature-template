@@ -266,7 +266,8 @@ services:
     networks:
       - temporal-network
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      # distroless image has no shell/mc client; use silo's built-in probe instead
+      test: ["CMD", "/usr/bin/silo", "healthcheck", "ready"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -364,8 +365,6 @@ services:
   continuum-workbench:
     image: projectcontinuum/continuum-workbench:0.0.13
     container_name: continuum-workbench
-    ports:
-      - "3002:8080"
     volumes:
       - ./example-workflows:/home/node/example-workflows
     depends_on:
@@ -431,6 +430,32 @@ services:
         condition: service_healthy
     networks:
       - temporal-network
+    restart: unless-stopped
+
+  # ========================================
+  # Nginx (Reverse Proxy)
+  # ========================================
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "3002:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      continuum-workbench:
+        condition: service_started
+      continuum-api-server:
+        condition: service_healthy
+    networks:
+      - temporal-network
+    healthcheck:
+      # "localhost" resolves to ::1 in this image and nginx isn't bound to IPv6, use 127.0.0.1
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ -T 2 >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     restart: unless-stopped
 networks:
   temporal-network:
