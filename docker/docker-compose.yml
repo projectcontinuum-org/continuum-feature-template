@@ -362,6 +362,30 @@ services:
     networks:
       - temporal-network
     restart: unless-stopped
+  continuum-credentials-server:
+    image: projectcontinuum/continuum-credentials-server:0.0.20
+    container_name: continuum-credentials-server
+    ports:
+      # host port matches the worker starter's default credentials-server-base-url (for ./gradlew :worker:bootRun)
+      - "8083:8080"
+    environment:
+      CONTINUUM_DB_URL: jdbc:postgresql://postgresql:5432/continuum
+      CONTINUUM_DB_USERNAME: continuum_owner
+      CONTINUUM_DB_PASSWORD: continuum-test-password
+      # DEV-ONLY key, must base64-decode to 32 bytes; generate a real one with: openssl rand -base64 32
+      CREDENTIALS_ENCRYPTION_MASTER_KEY: 0vlRfevA4YFs5ZPFeOq3PCQQTp+qYNhvjePZXYiRro0=
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    networks:
+      - temporal-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    restart: unless-stopped
   continuum-workbench:
     image: projectcontinuum/continuum-workbench:0.0.13
     container_name: continuum-workbench
@@ -383,6 +407,7 @@ services:
       TEMPORAL_NAMESPACE: default
       CONTINUUM_MINIO_ENDPOINT: http://minio:9000
       CONTINUUM_API_SERVER_BASE_URL: http://continuum-api-server:8080
+      CONTINUUM_CREDENTIALS_SERVER_BASE_URL: http://continuum-credentials-server:8080
       CONTINUUM_NODE_TASK_QUEUE: CONTINUUM_FEATURE_BASE_TASK_QUEUE
     depends_on:
       kafka1:
@@ -412,6 +437,7 @@ services:
       TEMPORAL_NAMESPACE: default
       CONTINUUM_MINIO_ENDPOINT: http://minio:9000
       CONTINUUM_API_SERVER_BASE_URL: http://continuum-api-server:8080
+      CONTINUUM_CREDENTIALS_SERVER_BASE_URL: http://continuum-credentials-server:8080
       CONTINUUM_NODE_TASK_QUEUE: CONTINUUM_CHEMINFORMATICS_WORKER_TASK_QUEUE
     depends_on:
       kafka1:
@@ -446,6 +472,10 @@ services:
       continuum-workbench:
         condition: service_started
       continuum-api-server:
+        condition: service_healthy
+      continuum-credentials-server:
+        condition: service_healthy
+      mosquitto:
         condition: service_healthy
     networks:
       - temporal-network
