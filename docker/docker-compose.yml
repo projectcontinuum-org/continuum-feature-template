@@ -387,8 +387,10 @@ services:
       start_period: 30s
     restart: unless-stopped
   continuum-workbench:
-    image: projectcontinuum/continuum-workbench:0.0.13
+    image: projectcontinuum/continuum-workbench:0.0.14
     container_name: continuum-workbench
+    environment:
+      CONTINUUM_API_SERVER_MCP_URL: http://continuum-api-server:8080/mcp
     volumes:
       - ./example-workflows:/home/node/example-workflows
     depends_on:
@@ -459,6 +461,24 @@ services:
     restart: unless-stopped
 
   # ========================================
+  # Ollama (Local LLM Server)
+  # ========================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - temporal-network
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list > /dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ========================================
   # Nginx (Reverse Proxy)
   # ========================================
   nginx:
@@ -502,3 +522,5 @@ volumes:
   kafka-data-2:
   kafka-data-3:
   minio-data:
+  ollama-data:
+    driver: local
