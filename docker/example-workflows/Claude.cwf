@@ -1,0 +1,627 @@
+{
+    "id": "0615570f9ea136946c5dc08a250010320707646f57f72cedab1dfb73d95eade6",
+    "name": "Claude",
+    "active": false,
+    "nodes": [
+        {
+            "id": "3",
+            "type": "BaseNode",
+            "position": {
+                "x": 560.6484375,
+                "y": 483.5
+            },
+            "data": {
+                "id": "org.projectcontinuum.feature.ai.claude.node.ClaudeAIAgentNodeModel",
+                "description": "Runs an autonomous Claude Code agent per row that completes the prompt using CLI tools (curl, jq, yq, grep, …)",
+                "title": "Claude AI Agent",
+                "subTitle": "Autonomous agent powered by Claude Code",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\">\n  <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z\" />\n</svg>",
+                "nodeModel": "org.projectcontinuum.feature.ai.claude.node.ClaudeAIAgentNodeModel",
+                "busy": null,
+                "inputs": {
+                    "input": {
+                        "name": "Input Table (optional)",
+                        "contentType": "application/octet-stream"
+                    }
+                },
+                "outputs": {
+                    "output": {
+                        "name": "Agent Results",
+                        "contentType": "application/octet-stream"
+                    }
+                },
+                "properties": {
+                    "backend": "ANTHROPIC",
+                    "baseUrl": "",
+                    "model": "sonnet",
+                    "fallbackModel": "",
+                    "credential": "",
+                    "prompt": "Describe the data in ./input.json",
+                    "systemPromptMode": "APPEND",
+                    "systemPrompt": "",
+                    "includeRowAsFile": true,
+                    "tools": [
+                        "Bash",
+                        "Read",
+                        "Write",
+                        "Edit",
+                        "Glob",
+                        "Grep"
+                    ],
+                    "bashAllowList": [
+                        "curl",
+                        "jq",
+                        "yq",
+                        "grep",
+                        "sed",
+                        "awk",
+                        "cat",
+                        "ls",
+                        "head",
+                        "tail",
+                        "sort",
+                        "wc",
+                        "base64",
+                        "date"
+                    ],
+                    "bashDenyList": [
+                        "rm",
+                        "sudo"
+                    ],
+                    "mcpServers": "",
+                    "responseColumn": "response",
+                    "outputSchema": "",
+                    "flattenStructuredOutput": false,
+                    "includeIntermediateSteps": false,
+                    "maxTurns": 10,
+                    "timeoutSeconds": 300,
+                    "maxBudgetUsd": 0,
+                    "effort": "",
+                    "onError": "CONTINUE"
+                },
+                "propertiesSchema": {
+                    "type": "object",
+                    "properties": {
+                        "backend": {
+                            "type": "string",
+                            "title": "Backend",
+                            "description": "Which Anthropic-compatible API the agent talks to.",
+                            "oneOf": [
+                                {
+                                    "const": "ANTHROPIC",
+                                    "title": "Anthropic (Claude)"
+                                },
+                                {
+                                    "const": "OLLAMA",
+                                    "title": "Ollama (local)"
+                                },
+                                {
+                                    "const": "OLLAMA_CLOUD",
+                                    "title": "Ollama Cloud"
+                                },
+                                {
+                                    "const": "OPENROUTER",
+                                    "title": "OpenRouter"
+                                },
+                                {
+                                    "const": "LITELLM",
+                                    "title": "LiteLLM / gateway"
+                                },
+                                {
+                                    "const": "CUSTOM",
+                                    "title": "Custom Anthropic-compatible endpoint"
+                                }
+                            ],
+                            "default": "ANTHROPIC"
+                        },
+                        "baseUrl": {
+                            "type": "string",
+                            "title": "Base URL",
+                            "description": "Anthropic-compatible base URL (no /v1). Leave empty to use the backend's default.",
+                            "default": ""
+                        },
+                        "model": {
+                            "type": "string",
+                            "title": "Model",
+                            "description": "Model name or alias (Claude: sonnet, opus, haiku or a full model ID; Ollama: e.g. qwen3-coder; OpenRouter: e.g. openai/gpt-5).",
+                            "default": "sonnet"
+                        },
+                        "fallbackModel": {
+                            "type": "string",
+                            "title": "Fallback Model(s)",
+                            "description": "Optional comma-separated list of models to fall back to when the primary model is unavailable or overloaded.",
+                            "default": ""
+                        },
+                        "credential": {
+                            "type": "string",
+                            "title": "Credential",
+                            "description": "Name of a stored GENERIC credential holding the API key; it must contain a 'token' key. Optional for local Ollama.",
+                            "default": ""
+                        },
+                        "prompt": {
+                            "type": "string",
+                            "title": "Prompt",
+                            "description": "FreeMarker template rendered per input row; use ${row.columnName}.",
+                            "minLength": 1,
+                            "default": "Describe the data in ./input.json"
+                        },
+                        "systemPromptMode": {
+                            "type": "string",
+                            "title": "System Prompt Mode",
+                            "description": "How the system prompt below is combined with Claude Code's built-in system prompt.",
+                            "oneOf": [
+                                {
+                                    "const": "APPEND",
+                                    "title": "Append to Claude Code's default system prompt"
+                                },
+                                {
+                                    "const": "REPLACE",
+                                    "title": "Replace the system prompt"
+                                }
+                            ],
+                            "default": "APPEND"
+                        },
+                        "systemPrompt": {
+                            "type": "string",
+                            "title": "System Prompt",
+                            "description": "Optional system prompt (Markdown), appended to or replacing the default according to the mode above.",
+                            "default": ""
+                        },
+                        "includeRowAsFile": {
+                            "type": "boolean",
+                            "title": "Write row to ./input.json",
+                            "description": "Write the current input row as JSON to ./input.json in the agent's working directory.",
+                            "default": true
+                        },
+                        "tools": {
+                            "type": "array",
+                            "title": "Allowed Tools",
+                            "description": "Built-in Claude Code tools the agent may use.",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Bash",
+                                    "Read",
+                                    "Write",
+                                    "Edit",
+                                    "Glob",
+                                    "Grep",
+                                    "WebFetch",
+                                    "WebSearch"
+                                ]
+                            },
+                            "default": [
+                                "Bash",
+                                "Read",
+                                "Write",
+                                "Edit",
+                                "Glob",
+                                "Grep"
+                            ]
+                        },
+                        "bashAllowList": {
+                            "type": "array",
+                            "title": "Bash Allow List",
+                            "description": "Commands the agent may run without asking. A bare command name allows any arguments; a full rule like Bash(git status) is used as-is.",
+                            "items": {
+                                "type": "string"
+                            },
+                            "default": [
+                                "curl",
+                                "jq",
+                                "yq",
+                                "grep",
+                                "sed",
+                                "awk",
+                                "cat",
+                                "ls",
+                                "head",
+                                "tail",
+                                "sort",
+                                "wc",
+                                "base64",
+                                "date"
+                            ]
+                        },
+                        "bashDenyList": {
+                            "type": "array",
+                            "title": "Bash Deny List",
+                            "description": "Commands the agent may never run. A bare command name denies any arguments; a full rule like Bash(git push) is used as-is.",
+                            "items": {
+                                "type": "string"
+                            },
+                            "default": [
+                                "rm",
+                                "sudo"
+                            ]
+                        },
+                        "mcpServers": {
+                            "type": "string",
+                            "title": "MCP Servers",
+                            "description": "Optional MCP servers config: {\"mcpServers\": {...}}",
+                            "default": ""
+                        },
+                        "responseColumn": {
+                            "type": "string",
+                            "title": "Response Column",
+                            "description": "Name of the output column that receives the agent's final answer.",
+                            "default": "response"
+                        },
+                        "outputSchema": {
+                            "type": "string",
+                            "title": "Output Schema",
+                            "description": "Optional JSON Schema; the agent's final answer is validated against it and written to agent_structured_output.",
+                            "default": ""
+                        },
+                        "flattenStructuredOutput": {
+                            "type": "boolean",
+                            "title": "Flatten Structured Output",
+                            "description": "Write each top-level field of the structured output to its own column.",
+                            "default": false
+                        },
+                        "includeIntermediateSteps": {
+                            "type": "boolean",
+                            "title": "Include Intermediate Steps",
+                            "description": "Add a column with the agent's intermediate messages and tool calls.",
+                            "default": false
+                        },
+                        "maxTurns": {
+                            "type": "integer",
+                            "title": "Max Turns",
+                            "description": "Maximum number of agent turns per row.",
+                            "minimum": 1,
+                            "maximum": 200,
+                            "default": 10
+                        },
+                        "timeoutSeconds": {
+                            "type": "integer",
+                            "title": "Timeout (seconds)",
+                            "description": "Maximum wall-clock time per row.",
+                            "minimum": 10,
+                            "maximum": 7200,
+                            "default": 300
+                        },
+                        "maxBudgetUsd": {
+                            "type": "number",
+                            "title": "Max Budget (USD)",
+                            "description": "0 = no limit",
+                            "minimum": 0,
+                            "default": 0
+                        },
+                        "effort": {
+                            "type": "string",
+                            "title": "Effort",
+                            "description": "Reasoning effort level passed to the model.",
+                            "oneOf": [
+                                {
+                                    "const": "",
+                                    "title": "Model default"
+                                },
+                                {
+                                    "const": "low",
+                                    "title": "Low"
+                                },
+                                {
+                                    "const": "medium",
+                                    "title": "Medium"
+                                },
+                                {
+                                    "const": "high",
+                                    "title": "High"
+                                },
+                                {
+                                    "const": "xhigh",
+                                    "title": "Extra high"
+                                },
+                                {
+                                    "const": "max",
+                                    "title": "Max"
+                                }
+                            ],
+                            "default": ""
+                        },
+                        "onError": {
+                            "type": "string",
+                            "title": "On Error",
+                            "description": "What to do when the agent fails for a row.",
+                            "oneOf": [
+                                {
+                                    "const": "CONTINUE",
+                                    "title": "Write error columns and continue"
+                                },
+                                {
+                                    "const": "FAIL",
+                                    "title": "Fail the node"
+                                }
+                            ],
+                            "default": "CONTINUE"
+                        }
+                    },
+                    "required": [
+                        "prompt"
+                    ]
+                },
+                "propertiesUISchema": {
+                    "type": "Categorization",
+                    "elements": [
+                        {
+                            "type": "Category",
+                            "label": "Model",
+                            "elements": [
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/backend"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/baseUrl",
+                                    "rule": {
+                                        "effect": "SHOW",
+                                        "condition": {
+                                            "scope": "#/properties/backend",
+                                            "schema": {
+                                                "enum": [
+                                                    "OLLAMA",
+                                                    "OLLAMA_CLOUD",
+                                                    "OPENROUTER",
+                                                    "LITELLM",
+                                                    "CUSTOM"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/model"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/fallbackModel"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/credential",
+                                    "options": {
+                                        "format": "credential",
+                                        "credentialType": "GENERIC"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Category",
+                            "label": "Prompt",
+                            "elements": [
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/prompt",
+                                    "options": {
+                                        "format": "code",
+                                        "language": "freemarker2",
+                                        "rows": 8
+                                    }
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/systemPromptMode"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/systemPrompt",
+                                    "options": {
+                                        "format": "code",
+                                        "language": "markdown",
+                                        "rows": 6
+                                    }
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/includeRowAsFile"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Category",
+                            "label": "Tools",
+                            "elements": [
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/tools"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/bashAllowList",
+                                    "rule": {
+                                        "effect": "SHOW",
+                                        "condition": {
+                                            "scope": "#/properties/tools",
+                                            "schema": {
+                                                "contains": {
+                                                    "const": "Bash"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/bashDenyList",
+                                    "rule": {
+                                        "effect": "SHOW",
+                                        "condition": {
+                                            "scope": "#/properties/tools",
+                                            "schema": {
+                                                "contains": {
+                                                    "const": "Bash"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/mcpServers",
+                                    "options": {
+                                        "format": "code",
+                                        "language": "json",
+                                        "rows": 8
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Category",
+                            "label": "Output",
+                            "elements": [
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/responseColumn"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/outputSchema",
+                                    "options": {
+                                        "format": "code",
+                                        "language": "json",
+                                        "rows": 8
+                                    }
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/flattenStructuredOutput",
+                                    "rule": {
+                                        "effect": "SHOW",
+                                        "condition": {
+                                            "scope": "#/properties/outputSchema",
+                                            "schema": {
+                                                "type": "string",
+                                                "minLength": 1
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/includeIntermediateSteps"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Category",
+                            "label": "Limits",
+                            "elements": [
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/maxTurns"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/timeoutSeconds"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/maxBudgetUsd"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/effort"
+                                },
+                                {
+                                    "type": "Control",
+                                    "scope": "#/properties/onError"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "status": null,
+                "nodeProgress": null,
+                "retryOptions": null
+            },
+            "width": 255,
+            "height": 100,
+            "selected": true,
+            "positionAbsolute": {
+                "x": 560.6484375,
+                "y": 483.5
+            },
+            "dragging": false
+        },
+        {
+            "id": "2",
+            "type": "BaseNode",
+            "position": {
+                "x": 214.765625,
+                "y": 576
+            },
+            "data": {
+                "id": "org.projectcontinuum.feature.base.analytics.node.CreateTableNodeModel",
+                "description": "Creates a structured table from FreeMarker template configuration",
+                "title": "Create Table",
+                "subTitle": "Generate table rows from template",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" strokeWidth={1.5} viewBox=\"0 0 24 24\">\n\t<path d=\"M21.5 2h-19a.5.5 0 0 0-.5.5v19a.5.5 0 0 0 .5.5h19a.5.5 0 0 0 .5-.5v-19a.5.5 0 0 0-.5-.5zm-13 19H3v-5.5h5.5V21zm0-6.5H3v-5h5.5v5zm0-6H3V3h5.5v5.5zm6 12.5h-5v-5.5h5V21zm0-6.5h-5v-5h5v5zm0-6h-5V3h5v5.5zM21 21h-5.5v-5.5H21V21zm0-6.5h-5.5v-5H21v5zm0-6h-5.5V3H21v5.5z\" fill=\"currentColor\"/>\n</svg>",
+                "nodeModel": "org.projectcontinuum.feature.base.analytics.node.CreateTableNodeModel",
+                "busy": null,
+                "inputs": null,
+                "outputs": {
+                    "data": {
+                        "name": "output table",
+                        "contentType": "text/plain"
+                    }
+                },
+                "properties": {
+                    "jsonArrayString": "[\n<#-- Generate normal data around mean=100, with some outliers -->\n<#list 1..1000 as i>\n  <#-- Normal values between 90-110 (mean ~100, std ~6) -->\n  <#assign normalValue = 95 + (i % 20) - 10>\n  <#-- Inject outliers every 50th row (values far from mean) -->\n  <#if i % 50 == 0>\n    <#-- Outlier: either very high (200+) or very low (0-10) -->\n    <#assign value = (i % 100 == 0)?then(250, 5)>\n  <#else>\n    <#assign value = normalValue>\n  </#if>\n{\"id\": ${i}, \"name\": \"Sensor_${i}\", \"value\": ${value}, \"timestamp\": \"2026-02-27T${(i % 24)?string(\"00\")}:${(i % 60)?string(\"00\")}:00Z\"}<#if i_has_next>,</#if>\n</#list>\n]"
+                },
+                "propertiesSchema": {
+                    "type": "object",
+                    "properties": {
+                        "jsonArrayString": {
+                            "type": "string",
+                            "title": "JSON Array",
+                            "description": "JSON array string where each object becomes a table row"
+                        }
+                    },
+                    "required": [
+                        "jsonArrayString"
+                    ]
+                },
+                "propertiesUISchema": {
+                    "type": "VerticalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/jsonArrayString",
+                            "options": {
+                                "format": "code",
+                                "language": "freemarker",
+                                "rows": 15
+                            }
+                        }
+                    ]
+                },
+                "status": null,
+                "nodeProgress": null
+            },
+            "width": 255,
+            "height": 100,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 214.765625,
+                "y": 576
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "type": "BaseEdge",
+            "source": "2",
+            "sourceHandle": "data",
+            "target": "3",
+            "targetHandle": "input",
+            "id": "reactflow__edge-2data-3input"
+        }
+    ]
+}

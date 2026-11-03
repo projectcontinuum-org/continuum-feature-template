@@ -132,6 +132,7 @@ Open the **Workbench** at <http://localhost:3002>. *Hello World* and *Hello Java
 |---------|-----|
 | Continuum Workbench | <http://localhost:3002> |
 | Continuum API server | <http://localhost:8080> |
+| Credentials manager | <http://localhost:3002/credentials-manager/ui/> |
 | Your worker (actuator) | <http://localhost:8090/actuator/health> |
 | Temporal UI | <http://localhost:38081> |
 | Kafka UI | <http://localhost:38082> |
@@ -215,6 +216,7 @@ The worker reads these environment variables. The defaults point at the local st
 | `TEMPORAL_SERVER_ADDRESS` | `localhost:7233` | Temporal frontend |
 | `TEMPORAL_NAMESPACE` | `default` | Temporal namespace |
 | `CONTINUUM_API_SERVER_BASE_URL` | `http://localhost:8080` | Where nodes are registered |
+| `CONTINUUM_CREDENTIALS_SERVER_BASE_URL` | `http://localhost:8083` | Where nodes resolve stored credentials |
 | `CONTINUUM_KAFKA_MAIN_BROKER_LIST` | `localhost:39092,…39094` | Kafka brokers (feature registration events) |
 | `CONTINUUM_KAFKA_MAIN_SCHEMA_REGISTRY` | `http://localhost:38080` | Schema registry |
 | `CONTINUUM_MINIO_ENDPOINT` | `http://localhost:39000` | Object storage for node data |
