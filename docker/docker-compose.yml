@@ -200,7 +200,7 @@ services:
       - kafka-data-3:/var/lib/kafka/data
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:7.2.2
+    image: confluentinc/cp-schema-registry:7.2.1
     hostname: schema-registry
     container_name: schema-registry
     ports:
@@ -209,6 +209,7 @@ services:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka1:19092,PLAINTEXT://kafka2:19092,PLAINTEXT://kafka3:19092
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8080
+      JAVA_OPTS: -Djdk.management.agent.startJmxAgent=disabled
     depends_on:
       kafka1:
         condition: service_healthy
@@ -396,6 +397,8 @@ services:
     depends_on:
       continuum-api-server:
         condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - temporal-network
     restart: unless-stopped
@@ -470,6 +473,18 @@ services:
       - ollama-data:/root/.ollama
     networks:
       - temporal-network
+    environment:
+      - OLLAMA_NUM_PARALLEL=1
+      - OLLAMA_NUM_THREAD=8
+      - OLLAMA_LLM_LIBRARY=metal
+      - OLLAMA_NUM_CTX=262144
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     healthcheck:
       test: ["CMD-SHELL", "ollama list > /dev/null 2>&1 || exit 1"]
       interval: 10s
