@@ -2,8 +2,8 @@ apiVersion: v2
 name: continuum-feature-template
 description: Project Continuum feature worker — Temporal worker for the template example nodes
 type: application
-version: 0.1.0
-appVersion: "0.0.1"
+version: 0.1.1
+appVersion: "0.0.2"
 keywords:
   - continuum
   - workflow
