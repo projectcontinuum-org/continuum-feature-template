@@ -279,7 +279,7 @@ services:
   # Continuum Platform Services
   # ========================================
   continuum-api-server:
-    image: projectcontinuum/continuum-api-server:0.0.20
+    image: projectcontinuum/continuum-api-server:0.0.21
     container_name: continuum-api-server
     ports:
       - "8080:8080"
@@ -313,7 +313,7 @@ services:
       start_period: 30s
     restart: unless-stopped
   continuum-orchestration-service:
-    image: projectcontinuum/continuum-orchestration-service:0.0.20
+    image: projectcontinuum/continuum-orchestration-service:0.0.21
     container_name: continuum-orchestration-service
     environment:
       CONTINUUM_KAFKA_MAIN_BROKER_LIST: PLAINTEXT://kafka1:19092,PLAINTEXT://kafka2:19092,PLAINTEXT://kafka3:19092
@@ -338,7 +338,7 @@ services:
       - temporal-network
     restart: unless-stopped
   continuum-message-bridge:
-    image: projectcontinuum/continuum-message-bridge:0.0.20
+    image: projectcontinuum/continuum-message-bridge:0.0.21
     container_name: continuum-message-bridge
     environment:
       CONTINUUM_KAFKA_MAIN_BROKER_LIST: PLAINTEXT://kafka1:19092,PLAINTEXT://kafka2:19092,PLAINTEXT://kafka3:19092
@@ -364,7 +364,7 @@ services:
       - temporal-network
     restart: unless-stopped
   continuum-credentials-server:
-    image: projectcontinuum/continuum-credentials-server:0.0.20
+    image: projectcontinuum/continuum-credentials-server:0.0.21
     container_name: continuum-credentials-server
     ports:
       # host port matches the worker starter's default credentials-server-base-url (for ./gradlew :worker:bootRun)
@@ -392,6 +392,7 @@ services:
     container_name: continuum-workbench
     environment:
       CONTINUUM_API_SERVER_MCP_URL: http://continuum-api-server:8080/mcp
+      SHELL: /bin/bash
     volumes:
       - ./example-workflows:/home/node/example-workflows
     depends_on:
@@ -466,32 +467,33 @@ services:
   # ========================================
   # Ollama (Local LLM Server)
   # ========================================
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
-    volumes:
-      - ollama-data:/root/.ollama
-    networks:
-      - temporal-network
-    environment:
-      - OLLAMA_NUM_PARALLEL=1
-      - OLLAMA_NUM_THREAD=8
-      - OLLAMA_LLM_LIBRARY=metal
-      - OLLAMA_NUM_CTX=262144
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    healthcheck:
-      test: ["CMD-SHELL", "ollama list > /dev/null 2>&1 || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    restart: unless-stopped
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama
+  #   volumes:
+  #     - ollama-data:/root/.ollama
+  #   networks:
+  #     - temporal-network
+  #   environment:
+  #     - OLLAMA_NUM_PARALLEL=1
+  #     - OLLAMA_NUM_THREAD=8
+  #     - OLLAMA_LLM_LIBRARY=metal
+  #     - OLLAMA_NUM_CTX=262144
+  #     - OLLAMA_CONTEXT_LENGTH=262144
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "ollama list > /dev/null 2>&1 || exit 1"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #     start_period: 10s
+  #   restart: unless-stopped
 
   # ========================================
   # Nginx (Reverse Proxy)
